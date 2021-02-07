@@ -2,21 +2,20 @@ require 'aws-sdk'
 
 class DynamodbTable
   def create(params)
-    exist?(params[:table_name]) ? nil : dynamodb.create_table(params)
+    describe(params[:table_name]) || dynamodb.create_table(params)
   end
 
   private
 
-  def exist?(table_name)
-    response = dynamodb.list_tables
-    next_page = true
-    while next_page
-      return true if response.table_names.find { |table| table == table_name }
-
-      next_page = response.next_page?
-      response = response.next_page if next_page
+  def describe(table_name)
+    retry_count = 0
+    begin
+      dynamodb.describe_table(table_name: table_name)
+    rescue Aws::DynamoDB::Errors::ResourceNotFoundException
+      sleep 0.1
+      retry if (retry_count += 1) < 10
+      nil
     end
-    false
   end
 
   def dynamodb
