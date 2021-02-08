@@ -1,4 +1,5 @@
 require_relative 'dynamodb_table'
+require_relative 'dynamodb_trigger_role'
 
 books = {
   attribute_definitions: [
@@ -23,3 +24,5 @@ books = {
 
 dynamodb_table = DynamodbTable.new
 p dynamodb_table.create(books)
+role = DynamodbTriggerRole.new
+p role.create('books')

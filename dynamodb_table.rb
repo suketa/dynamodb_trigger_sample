@@ -5,6 +5,13 @@ class DynamodbTable
     describe(params[:table_name]) || dynamodb.create_table(params)
   end
 
+  def stream_arn(table_name)
+    resp = describe(table_name)
+    return "#{resp.table.table_arn}/stream/*" if resp
+
+    raise "#{table_name} is not found"
+  end
+
   private
 
   def describe(table_name)

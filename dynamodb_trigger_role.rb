@@ -1,3 +1,5 @@
+require_relative 'dynamodb_table'
+
 class DynamodbTriggerRole
   def create_policy(table_name, arn)
     policy = find_policy(table_name)
@@ -28,30 +30,18 @@ class DynamodbTriggerRole
     str.gsub('{{dynamodb_stream_arn}}', arn)
   end
 
-  def stream_arn(table_name)
-    retry_count = 0
-    begin
-      resp = dynamodb.describe_table(table_name: table_name)
-      "#{resp.table.table_arn}/stream/*"
-    rescue Aws::DynamoDB::Errors::ResourceNotFoundException => e
-      sleep 1
-      retry if (retry_count += 1) < 10
-      raise e
-    end
-  end
-
   def create(table_name)
-    arn = stream_arn(table_name)
+    arn = dynamodb_table.stream_arn(table_name)
     policy_arn = create_policy(table_name, arn)
   end
 
   private
 
-  def dynamodb
-    @dynamodb ||= Aws::DynamoDB::Client.new
-  end
-
   def iam
     @iam ||= Aws::IAM::Client.new
+  end
+
+  def dynamodb_table
+    @dynamodb_table ||= DynamodbTable.new
   end
 end
