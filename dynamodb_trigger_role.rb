@@ -6,7 +6,7 @@ class DynamodbTriggerRole
     return policy if policy
 
     resp = iam.create_policy(
-      policy_name: "#{table_name}_trigger_policy",
+      policy_name: policy_name(table_name),
       policy_document: policy_document(table_name, arn)
     )
     resp.policy
@@ -18,24 +18,28 @@ class DynamodbTriggerRole
     while is_truncated
       resp = iam.list_policies(scope: 'Local')
       is_truncated = resp.is_truncated
-      policy = resp.policies.find { |pol| pol.policy_name == "#{table_name}_trigger_policy" }
+      policy = resp.policies.find { |pol| pol.policy_name == policy_name(table_name) }
       break if policy
     end
     policy
   end
 
   def policy_document(table_name, arn)
-    file = "#{File.dirname(File.absolute_path(__FILE__))}/#{table_name}_trigger_policy.json"
+    file = "#{File.dirname(File.absolute_path(__FILE__))}/#{policy_name(table_name)}.json"
     str = File.read(file)
     str.gsub('{{dynamodb_stream_arn}}', arn)
   end
 
   def create(table_name)
     arn = dynamodb_table.stream_arn(table_name)
-    policy_arn = create_policy(table_name, arn)
+    policy = create_policy(table_name, arn)
   end
 
   private
+
+  def policy_name(table_name)
+    "dyanmodb_#{table_name}_trigger_policy"
+  end
 
   def iam
     @iam ||= Aws::IAM::Client.new
