@@ -33,12 +33,43 @@ class DynamodbTriggerRole
   def create(table_name)
     arn = dynamodb_table.stream_arn(table_name)
     policy = create_policy(table_name, arn)
+    create_role(table_name, policy)
+  end
+
+  def create_role(table_name, policy)
+    res = get_role(table_name)
+    return res if res
+
+    iam.create_role(
+      assume_role_policy_document: lambda_trigger_role(table_name),
+      role_name: role_name(table_name)
+    )
+    iam.attach_role_policy(
+      policy_arn: policy.arn,
+      role_name: role_name(table_name)
+    )
+    get_role(table_name)
   end
 
   private
 
+  def lambda_trigger_role(table_name)
+    file = "#{File.dirname(File.absolute_path(__FILE__))}/lambda_#{table_name}_trigger_role.json"
+    File.read(file)
+  end
+
+  def get_role(table_name)
+    iam.get_role(role_name: role_name(table_name))
+  rescue Aws::IAM::Errors::NoSuchEntity
+    nil
+  end
+
   def policy_name(table_name)
-    "dyanmodb_#{table_name}_trigger_policy"
+    "dynamodb_#{table_name}_trigger_policy"
+  end
+
+  def role_name(table_name)
+    "lambda_#{table_name}_trigger_role"
   end
 
   def iam
