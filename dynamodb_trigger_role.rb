@@ -30,6 +30,11 @@ class DynamodbTriggerRole
     str.gsub('{{dynamodb_stream_arn}}', arn)
   end
 
+  def arn(table_name)
+    res = get_role(table_name)
+    res.role.arn
+  end
+
   def create(table_name)
     arn = dynamodb_table.stream_arn(table_name)
     policy = create_policy(table_name, arn)
