@@ -12,6 +12,13 @@ class DynamodbTable
     raise "#{table_name} is not found"
   end
 
+  def arn(table_name)
+    resp = describe(table_name)
+    return resp.table.table_arn if resp
+
+    raise "#{table_name} is not found"
+  end
+
   private
 
   def describe(table_name)
