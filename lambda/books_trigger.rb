@@ -1,3 +1,5 @@
-def foo(*args)
-  p args
+require 'json'
+def handler(event:, context:)
+  p event
+  p context
 end
