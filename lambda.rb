@@ -1,5 +1,8 @@
 class Lambda
   def create_trigger_function(table_name, s3_bucket, s3_key, role)
+    res = get_function(table_name)
+    return res if res
+
     res = lambda.create_function(
       function_name: "#{table_name}_trigger",
       runtime: 'ruby2.7',
@@ -16,6 +19,12 @@ class Lambda
   end
 
   private
+
+  def get_function(table_name)
+    lambda.get_function(function_name: "#{table_name}_trigger")
+  rescue
+    nil
+  end
 
   def create_event_source_mapping(function_name, table_name)
     lambda.create_event_source_mapping(
