@@ -1,12 +1,20 @@
 class Lambda
   def create_trigger_function(table_name, s3_bucket, s3_key, role)
     res = get_function(table_name)
-    return res if res
+    if res
+      update_code("#{table_name}_trigger", s3_bucket, s3_key, role)
+    else
+      create_function("#{table_name}_trigger", s3_bucket, s3_key)
+    end
+  end
 
+  private
+
+  def create_function(function_name, s3_bucket, s3_key, role)
     res = lambda.create_function(
-      function_name: "#{table_name}_trigger",
+      function_name: function_name,
       runtime: 'ruby2.7',
-      handler: "#{table_name}_trigger.handler",
+      handler: "#{function_name}.handler",
       code: {
         s3_bucket: s3_bucket,
         s3_key: s3_key
@@ -18,7 +26,13 @@ class Lambda
     res.function_arn
   end
 
-  private
+  def update_code(function_name, s3_bucket, s3_key)
+    lambda.update_function_code(
+      function_name: function_name,
+      s3_bucket: s3_bucket,
+      s3_key: s3_key
+    )
+  end
 
   def get_function(table_name)
     lambda.get_function(function_name: "#{table_name}_trigger")
