@@ -2,7 +2,7 @@ class Lambda
   def create_trigger_function(table_name, s3_bucket, s3_key, role)
     res = get_function(table_name)
     if res
-      update_code("#{table_name}_trigger", s3_bucket, s3_key, role)
+      update_code("#{table_name}_trigger", s3_bucket, s3_key)
     else
       create_function("#{table_name}_trigger", s3_bucket, s3_key)
     end
@@ -30,7 +30,8 @@ class Lambda
     lambda.update_function_code(
       function_name: function_name,
       s3_bucket: s3_bucket,
-      s3_key: s3_key
+      s3_key: s3_key,
+      publish: true
     )
   end
 
