@@ -7,11 +7,10 @@ end
 def add_summary(record)
   return unless record['NewImage']['cost']
 
-  puts $stdout.inspect
   puts record['NewImage']['cost']
 end
 
-def handler(event:, context:)
+def handler(event:, _context:)
   event['Records'].each do |record|
     dynamodb_record = record['dynamodb']
     next if summary?(dynamodb_record)

@@ -1,3 +1,5 @@
+require 'securerandom'
+
 class S3
   attr_reader :table_name
 
@@ -26,10 +28,18 @@ class S3
   private
 
   def create_bucket
+    bucket = bucket_exist?(bucket(table_name))
+    return bucket if bucket
+
     s3.create_bucket(
       bucket: bucket(table_name),
       acl: 'private'
     )
+  end
+
+  def bucket_exist?(bucket)
+    bucket_trigger = /^#{bucket.gsub(/-trigger-.*$/, '-trigger')}/
+    s3.list_buckets.buckets.find { |b| bucket_trigger =~ b.name }&.name
   end
 
   def put_public_access_block
@@ -45,7 +55,10 @@ class S3
   end
 
   def bucket(table_name)
-    @bucket ||= "#{Time.now.strftime('%Y%m%d')}-#{table_name}-trigger"
+    return @bucket if @bucket
+
+    @bucket = "#{table_name}-trigger-#{SecureRandom.uuid}"
+    @bucket = bucket_exist?(@bucket) || @bucket
   end
 
   def s3
