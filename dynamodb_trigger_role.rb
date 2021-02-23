@@ -1,13 +1,13 @@
 require_relative 'dynamodb_table'
 
 class DynamodbTriggerRole
-  def create_policy(table_name, arn)
+  def create_policy(table_name, table_arn, stream_arn)
     policy = find_policy(table_name)
     return policy if policy
 
     resp = iam.create_policy(
       policy_name: policy_name(table_name),
-      policy_document: policy_document(table_name, arn)
+      policy_document: policy_document(table_name, table_arn, stream_arn)
     )
     resp.policy
   end
@@ -24,10 +24,10 @@ class DynamodbTriggerRole
     policy
   end
 
-  def policy_document(table_name, arn)
+  def policy_document(table_name, table_arn, stream_arn)
     file = "#{File.dirname(File.absolute_path(__FILE__))}/#{policy_name(table_name)}.json"
     str = File.read(file)
-    str.gsub('{{dynamodb_stream_arn}}', arn)
+    str.gsub('{{dynamodb_stream_arn}}', stream_arn).gsub('{{dynamodb_arn}}', table_arn)
   end
 
   def arn(table_name)
@@ -36,8 +36,9 @@ class DynamodbTriggerRole
   end
 
   def create(table_name)
-    arn = dynamodb_table.stream_arn(table_name)
-    policy = create_policy(table_name, arn)
+    table_arn = dynamodb_table.arn(table_name)
+    stream_arn = dynamodb_table.stream_arn(table_name)
+    policy = create_policy(table_name, table_arn, stream_arn)
     create_role(table_name, policy)
   end
 

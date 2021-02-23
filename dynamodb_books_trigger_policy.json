@@ -13,6 +13,15 @@
     },
     {
       "Effect": "Allow",
+      "Action": {
+        "dynamodb:PutItem",
+        "dynamodb:Query",
+        "dynamodb:UpdateItem"
+      },
+      "Resource": "{{dynamodb_arn}}"
+    },
+    {
+      "Effect": "Allow",
       "Action": [
         "logs:CreateLogStream",
         "logs:CreateLogGroup",
