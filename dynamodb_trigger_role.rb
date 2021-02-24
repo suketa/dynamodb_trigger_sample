@@ -4,7 +4,7 @@ class DynamodbTriggerRole
   def create_policy(table_name, table_arn, stream_arn)
     policy = find_policy(table_name)
     return policy if policy
-
+p policy_document(table_name, table_arn, stream_arn)
     resp = iam.create_policy(
       policy_name: policy_name(table_name),
       policy_document: policy_document(table_name, table_arn, stream_arn)

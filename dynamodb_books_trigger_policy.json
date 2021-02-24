@@ -13,11 +13,12 @@
     },
     {
       "Effect": "Allow",
-      "Action": {
+      "Action": [
         "dynamodb:PutItem",
+        "dynamodb:GetItem",
         "dynamodb:Query",
         "dynamodb:UpdateItem"
-      },
+      ],
       "Resource": "{{dynamodb_arn}}"
     },
     {
