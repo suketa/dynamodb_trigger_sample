@@ -29,7 +29,35 @@ class BooksTrigger
   end
 
   def update_total_cost(total_cost)
-    dynamodb = Aws::DynamoDB::Client.new
+    if summery_exist?
+      p "update #{total_cost}"
+      dynamodb.update_item(
+        {
+          table_name: 'books',
+          key: {
+            title: SUMMERY_KEY
+          },
+          expression_attribute_values: {
+            total_cost: total_cost
+          },
+          update_expression: 'SET cost = cost + :total_cost'
+        }
+      )
+    else
+      p "insert #{total_cost}"
+      dynamodb.put_item(
+        {
+          table_name: 'books',
+          item: {
+            title: { s: SUMMERY_KEY },
+            cost: { n: total_cost }
+          }
+        }
+      )
+    end
+  end
+
+  def summery_exist?
     resp = dynamodb.get_item(
       {
         key: {
@@ -38,11 +66,11 @@ class BooksTrigger
         table_name: 'books'
       }
     )
-    if resp.item
-      p "update #{total_cost}"
-    else
-      p "insert #{total_cost}"
-    end
+    resp.item
+  end
+
+  def dynamodb
+    @dynamodb ||= Aws::DynamoDB::Client.new
   end
 end
 
