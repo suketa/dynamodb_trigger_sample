@@ -17,6 +17,8 @@ class BooksTrigger
   end
 
   def cost(record)
+    return 0 if summary?(record)
+
     new_cost = record['NewImage'] ? cost_value(record['NewImage']) : 0
     old_cost = record['OldImage'] ? cost_value(record['OldImage']) : 0
     new_cost - old_cost
