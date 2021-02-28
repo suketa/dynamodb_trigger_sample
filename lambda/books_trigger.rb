@@ -5,7 +5,7 @@ class BooksTrigger
   SUMMERY_KEY = '#SUMMERY#'.freeze
 
   def run(event, context)
-    p event['Records']
+    # p event['Records']
     return if event['Records'].size == 1 && summary?(event['Records'][0]['dynamodb'])
 
     total_cost = event['Records'].inject(0) { |total, rec| total + cost(rec['dynamodb']) }
@@ -30,7 +30,6 @@ class BooksTrigger
 
   def update_total_cost(total_cost)
     if summery_exist?
-      p "update #{total_cost}"
       dynamodb.update_item(
         {
           table_name: 'books',
@@ -38,19 +37,18 @@ class BooksTrigger
             title: SUMMERY_KEY
           },
           expression_attribute_values: {
-            total_cost: total_cost
+            ':total_cost' => total_cost
           },
           update_expression: 'SET cost = cost + :total_cost'
         }
       )
     else
-      p "insert #{total_cost}"
       dynamodb.put_item(
         {
           table_name: 'books',
           item: {
-            title: { s: SUMMERY_KEY },
-            cost: { n: total_cost }
+            title: SUMMERY_KEY,
+            cost: total_cost
           }
         }
       )
