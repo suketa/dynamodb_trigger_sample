@@ -4,13 +4,13 @@ class Lambda
     if res
       update_code("#{table_name}_trigger", s3_bucket, s3_key)
     else
-      create_function("#{table_name}_trigger", s3_bucket, s3_key)
+      create_function("#{table_name}_trigger", table_name, s3_bucket, s3_key, role)
     end
   end
 
   private
 
-  def create_function(function_name, s3_bucket, s3_key, role)
+  def create_function(function_name, table_name, s3_bucket, s3_key, role)
     res = lambda.create_function(
       function_name: function_name,
       runtime: 'ruby2.7',
