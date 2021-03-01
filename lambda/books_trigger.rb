@@ -4,7 +4,7 @@ require 'aws-sdk'
 class BooksTrigger
   SUMMERY_KEY = '#SUMMERY#'.freeze
 
-  def run(event, context)
+  def run(event, _context)
     # p event['Records']
     return if event['Records'].size == 1 && summary?(event['Records'][0]['dynamodb'])
 
@@ -30,29 +30,33 @@ class BooksTrigger
 
   def update_total_cost(total_cost)
     if summery_exist?
-      dynamodb.update_item(
-        {
-          table_name: 'books',
-          key: {
-            title: SUMMERY_KEY
-          },
-          expression_attribute_values: {
-            ':total_cost' => total_cost
-          },
-          update_expression: 'SET cost = cost + :total_cost'
-        }
-      )
+      dynamodb.update_item(update_item_param(total_cost))
     else
-      dynamodb.put_item(
-        {
-          table_name: 'books',
-          item: {
-            title: SUMMERY_KEY,
-            cost: total_cost
-          }
-        }
-      )
+      dynamodb.put_item(put_item_param(total_cost))
     end
+  end
+
+  def put_item_param(total_cost)
+    {
+      table_name: 'books',
+      item: {
+        title: SUMMERY_KEY,
+        cost: total_cost
+      }
+    }
+  end
+
+  def update_item_param(total_cost)
+    {
+      table_name: 'books',
+      key: {
+        title: SUMMERY_KEY
+      },
+      expression_attribute_values: {
+        ':total_cost' => total_cost
+      },
+      update_expression: 'SET cost = cost + :total_cost'
+    }
   end
 
   def summery_exist?

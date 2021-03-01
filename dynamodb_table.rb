@@ -6,10 +6,7 @@ class DynamodbTable
   end
 
   def stream_arn(table_name)
-    resp = describe(table_name)
-    return "#{resp.table.table_arn}/stream/*" if resp
-
-    raise "#{table_name} is not found"
+    "#{arn(table_name)}/stream/*"
   end
 
   def arn(table_name)
@@ -33,10 +30,6 @@ class DynamodbTable
   end
 
   def dynamodb
-    @dynamodb ||= initialize_dynamodb
-  end
-
-  def initialize_dynamodb
-    Aws::DynamoDB::Client.new
+    @dynamodb ||= Aws::DynamoDB::Client.new
   end
 end
